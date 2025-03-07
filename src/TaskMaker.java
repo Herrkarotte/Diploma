@@ -25,6 +25,7 @@ public class TaskMaker {
     public ArrayList<ArrayList<NIRData>> MakeTask() {
         Random random = new Random();
         ArrayList<ArrayList<NIRData>> listNIRData = new ArrayList<>();
+
         for (int i = 0; i < 100; i++) {
             ArrayList<NIRData> innerList = new ArrayList<>();
             for (int j = 1; j <= 10; j++) {

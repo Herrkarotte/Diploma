@@ -57,6 +57,7 @@ public class Heuristic {
     public void heuristicSolve(ArrayList<ArrayList<NIRData>> task) {
         listOfTaskSize=task.size();
         ArrayList<Map<NIRData, Integer>> mapList = new ArrayList<>();
+
         for (ArrayList<NIRData> inner : task) {
 
             Map<NIRData, Integer> combination = new HashMap<>();

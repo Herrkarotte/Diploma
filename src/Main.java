@@ -10,8 +10,8 @@ public class Main {
         BF bf = new BF();
         bf.bfSolver(tasks);
         bf.printResult();
-        //List<Map<List<NIRData>, Integer>> startPopulation = new StartPopulation().StartPopulationForming(tasks);
-        List<Map<List<NIRData>, Integer>> startPopulation = new StartPopulationMod().StartPopulationForming(tasks);
+        List<Map<List<NIRData>, Integer>> startPopulation = new StartPopulation().StartPopulationForming(tasks);
+        //List<Map<List<NIRData>, Integer>> startPopulation = new StartPopulationMod().StartPopulationForming(tasks);
         EGA ega = new EGA();
         ega.egaSolver(startPopulation);
         ega.egaPrintResult();

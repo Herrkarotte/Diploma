@@ -60,6 +60,7 @@ public class StartPopulation {
     }
 
     public List<List<NIRData>> getStartPopulation(List<NIRData> list,int sizePopulation) {
+
         Set<List<NIRData>> uniquePermutations = new HashSet<>();
         Random random = new Random();
 

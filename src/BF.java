@@ -3,6 +3,7 @@ import org.apache.commons.collections4.iterators.PermutationIterator;
 
 import java.util.ArrayList;
 import java.util.List;
+
 /*
  * Класс реализующий метод решения путем полного перебора(Brut Force):
  * Метод bfSolver:

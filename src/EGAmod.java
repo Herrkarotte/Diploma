@@ -8,6 +8,7 @@ import java.util.*;
 
 public class EGAmod extends EGA {
     Map.Entry<List<NIRData>, Integer> result;
+
     @Override
     public List<Map<List<NIRData>, Integer>> parentSelector(Map<List<NIRData>, Integer> startPopulation) {
         // Преобразуем Map в список entry (ключ-значение)

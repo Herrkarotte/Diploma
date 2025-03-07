@@ -235,6 +235,7 @@ public class EGA {
         }
         Map<List<NIRData>, Integer> updatedPopulation = new HashMap<>(oldPopulation);
         Map<List<NIRData>, Integer> champions = new HashMap<>();
+
         for (int i = 0; i <oldAndNewIndividual; i++) {
 
             List<List<NIRData>> candidateKeys = new ArrayList<>(newPopulation.keySet());
