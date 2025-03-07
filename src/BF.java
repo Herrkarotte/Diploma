@@ -1,8 +1,11 @@
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.collections4.iterators.PermutationIterator;
 
+
+import java.util.concurrent.*;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /*
  * Класс реализующий метод решения путем полного перебора(Brut Force):
@@ -32,45 +35,78 @@ public class BF {
     List<NIRData> tmpResult;
     List<NIRData> tmpGlobalResult;
 
+    BlockingDeque<List<List<NIRData>>> queue = new LinkedBlockingDeque<>(100);
+    CountDownLatch latch = new CountDownLatch(2);
+
+
     public void bfSolver(ArrayList<ArrayList<NIRData>> tasks) {
-            listOfTaskSize=tasks.size();
-        for (ArrayList<NIRData> inner : tasks) {
-            PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
-            List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
-            maxF = 0;
-            for (List<NIRData> permutation : permutations) {
-                F = 0;
-                totalTime = 0;
-                for (NIRData detail : permutation) {
-                    leadTime = detail.getLeadTime();
-                    if (totalTime == 0) {
-                        startTime = detail.getStartTime();
-                    } else {
-                        startTime = Math.max(detail.getStartTime(), totalTime);
-                    }
-                    int endTime = startTime + leadTime;
-                    if (endTime <= detail.getDirectiveDeadline()) {
-                        F++;
-                    }
-                    totalTime = endTime;
-                }
-
-                if (F >= maxF) {
-                    maxF = F;
-                    tmpResult = permutation;
+        listOfTaskSize = tasks.size();
+        Thread producer = new Thread(() -> {
+            for (ArrayList<NIRData> inner : tasks) {
+                try {
+                    PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
+                    List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
+                    queue.put(permutations);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
                 }
             }
-            //System.out.println(maxF);
-            if (maxF >= globalMaxF) {
-                globalMaxF = maxF;
-                tmpGlobalResult = tmpResult;
-            }
+            latch.countDown();
+        });
 
+        Thread counsumer = new Thread(() -> {
+            for (ArrayList<NIRData> inner : tasks) {
+                try {
+                    List<List<NIRData>> permutations = queue.take();
+
+                    maxF = 0;
+                    for (List<NIRData> permutation : permutations) {
+                        F = 0;
+                        totalTime = 0;
+                        for (NIRData detail : permutation) {
+                            leadTime = detail.getLeadTime();
+                            if (totalTime == 0) {
+                                startTime = detail.getStartTime();
+                            } else {
+                                startTime = Math.max(detail.getStartTime(), totalTime);
+                            }
+                            int endTime = startTime + leadTime;
+                            if (endTime <= detail.getDirectiveDeadline()) {
+                                F++;
+                            }
+                            totalTime = endTime;
+                        }
+                        if (F >= maxF) {
+                            maxF = F;
+                            tmpResult = permutation;
+                        }
+                    }
+                    //System.out.println(maxF);
+                    if (maxF >= globalMaxF) {
+                        globalMaxF = maxF;
+                        tmpGlobalResult = tmpResult;
+                    }
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            latch.countDown();
+        });
+        producer.start();
+        counsumer.start();
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
     public void printResult() {
-        System.out.print("Лучшая перестановка, полученная путем полного перебора за "+listOfTaskSize+" задач:[ ");
+        System.out.print("Лучшая перестановка, полученная путем полного перебора за " + listOfTaskSize + " задач:[ ");
         for (NIRData detail : tmpGlobalResult) {
             System.out.print(detail.getNumberOfDetails() + " ");
         }
@@ -81,6 +117,4 @@ public class BF {
         long duration = endTime - programStartTime;
         System.out.println("Время выполнения: " + duration + " мс " + duration / 1000 + " сек");
     }
-
 }
-
