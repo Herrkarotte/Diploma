@@ -17,10 +17,10 @@ public class TaskMaker {
 
     int sTMin = 1;
     int sTMax = 10;
-    int ddlMin = 15;
+    int ddlMin = 16;
     int ddlMax = 20;
     int lTMin = 3;
-    int lTMax = 10;
+    int lTMax = 7;
 
     public ArrayList<ArrayList<NIRData>> MakeTask() {
         Random random = new Random();

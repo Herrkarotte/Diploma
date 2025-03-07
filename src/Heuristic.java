@@ -36,6 +36,8 @@ import java.util.*;
  *  позднее чем это предполагалось.
  * */
 public class Heuristic {
+    int listOfTaskSize;
+
     int startTime;
     int directiveDeadline;
     int leadTime;
@@ -53,8 +55,10 @@ public class Heuristic {
 
 
     public void heuristicSolve(ArrayList<ArrayList<NIRData>> task) {
+        listOfTaskSize=task.size();
         ArrayList<Map<NIRData, Integer>> mapList = new ArrayList<>();
         for (ArrayList<NIRData> inner : task) {
+
             Map<NIRData, Integer> combination = new HashMap<>();
             for (NIRData detail : inner) {
 
@@ -89,7 +93,7 @@ public class Heuristic {
                 }
                 totalTime = endTime;
             }
-            //System.out.println(F);
+            System.out.println(F);
             if (F >= maxF) {
                 maxF = F;
                 tmp_result = inner;
@@ -108,7 +112,7 @@ public class Heuristic {
     }
 
     public void printResult() {
-        System.out.print("Лучшая перестановка, полученная эвристикой за 100 задач:[");
+        System.out.print("Лучшая перестановка, полученная эвристикой за "+listOfTaskSize+" задач:[");
         for (Map.Entry<NIRData, Integer> entry : tmp_result.entrySet()) {
             int part = (entry.getKey().getNumberOfDetails());
             System.out.print(part + " ");
@@ -119,7 +123,6 @@ public class Heuristic {
         long endTime = System.currentTimeMillis();
         long duration = endTime - programStartTime;
         System.out.println("Время выполнения: " + duration + " мс");
-
 
     }
 }

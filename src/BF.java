@@ -17,6 +17,8 @@ import java.util.List;
  * */
 
 public class BF {
+    int listOfTaskSize;
+
     int startTime;
     int leadTime;
 
@@ -30,7 +32,7 @@ public class BF {
     List<NIRData> tmpGlobalResult;
 
     public void bfSolver(ArrayList<ArrayList<NIRData>> tasks) {
-
+            listOfTaskSize=tasks.size();
         for (ArrayList<NIRData> inner : tasks) {
             PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
             List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
@@ -67,7 +69,7 @@ public class BF {
     }
 
     public void printResult() {
-        System.out.print("Лучшая перестановка, полученная путем полного перебора за 100 задач:[ ");
+        System.out.print("Лучшая перестановка, полученная путем полного перебора за "+listOfTaskSize+" задач:[ ");
         for (NIRData detail : tmpGlobalResult) {
             System.out.print(detail.getNumberOfDetails() + " ");
         }
