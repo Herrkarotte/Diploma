@@ -1,10 +1,10 @@
 import java.security.SecureRandom;
 import java.util.*;
 /*
-* Класс реализующий ЭГА с замененным оператором.
-* В данном случае заменен способ выбора родителей, теперь он происходит случайным образом
-* остальные операторы остались без изменений и вызываются из родительского класса EGA
-* */
+ * Класс реализующий ЭГА с замененным оператором.
+ * В данном случае заменен способ выбора родителей, теперь он происходит случайным образом
+ * остальные операторы остались без изменений и вызываются из родительского класса EGA
+ * */
 
 public class EGAmod extends EGA {
     Map.Entry<List<NIRData>, Integer> result;
@@ -38,7 +38,7 @@ public class EGAmod extends EGA {
     }
     public void egaSolverCall(List<Map<List<NIRData>, Integer>> startPopulations){
         super.egaSolver(startPopulations);
-         result=getResult();
+        result=getResult();
     }
     public void printResult(){
         System.out.print("Лучшая перестановка, полученная при помощи модифицированного ЭГА за 100 задач:[ ");

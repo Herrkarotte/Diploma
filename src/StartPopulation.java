@@ -17,6 +17,7 @@ import java.util.*;
 * */
 
 public class StartPopulation {
+    int populationSize=30;
     int directiveDeadline;
     int leadTime;
     int totalTime;
@@ -28,7 +29,7 @@ public class StartPopulation {
         List<Map<List<NIRData>, Integer>> individualWithFitness = new ArrayList<>();
 
         for (ArrayList<NIRData> inner : tasks) {
-            List<List<NIRData>> startPopulation = getStartPopulation(inner);
+            List<List<NIRData>> startPopulation = getStartPopulation(inner,populationSize);
 
             Map<List<NIRData>, Integer> Individual = new HashMap<>();
 
@@ -58,13 +59,13 @@ public class StartPopulation {
         return individualWithFitness;
     }
 
-    public List<List<NIRData>> getStartPopulation(List<NIRData> list) {
+    public List<List<NIRData>> getStartPopulation(List<NIRData> list,int sizePopulation) {
         Set<List<NIRData>> uniquePermutations = new HashSet<>();
         Random random = new Random();
 
         float maxPermutations = factorial(list.size());
 
-        while (uniquePermutations.size() < 30 && uniquePermutations.size() < maxPermutations) {
+        while (uniquePermutations.size() <sizePopulation  && uniquePermutations.size() < maxPermutations) {
             List<NIRData> shuffledList = new ArrayList<>(list);
             Collections.shuffle(shuffledList, random);
             uniquePermutations.add(shuffledList);

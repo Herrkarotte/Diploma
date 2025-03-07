@@ -9,7 +9,6 @@ public class StartPopulationMod extends StartPopulation {
         List<Map<List<NIRData>, Integer>> individualWithFitness = new ArrayList<>();
         for (ArrayList<NIRData> inner : tasks) {
             List<List<NIRData>> startPopulation = getStartPopulation(inner, populationSize);
-
             Map<List<NIRData>, Integer> Individual = new HashMap<>();
             ArrayList<Map<NIRData, Integer>> mapList = new ArrayList<>();
             Map<NIRData, Integer> combination = new HashMap<>();

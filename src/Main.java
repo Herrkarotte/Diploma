@@ -7,15 +7,17 @@ public class Main {
         Heuristic heuristic = new Heuristic();
         heuristic.heuristicSolve(tasks);
         heuristic.printResult();
-        //BF bf = new BF();
-        //bf.bfSolver(tasks);
-        //bf.printResult();
-        List<Map<List<NIRData>, Integer>> startPopulation = new StartPopulation().StartPopulationForming(tasks);
+        BF bf = new BF();
+        bf.bfSolver(tasks);
+        bf.printResult();
+        //List<Map<List<NIRData>, Integer>> startPopulation = new StartPopulation().StartPopulationForming(tasks);
+        List<Map<List<NIRData>, Integer>> startPopulation = new StartPopulationMod().StartPopulationForming(tasks);
         EGA ega = new EGA();
         ega.egaSolver(startPopulation);
         ega.egaPrintResult();
-        EGAmod egaMod=new EGAmod();
+        EGAmod egaMod = new EGAmod();
         egaMod.egaSolverCall(startPopulation);
         egaMod.printResult();
     }
+    
 }

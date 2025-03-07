@@ -111,7 +111,7 @@ public class EGA {
             } while (reproductiveSet.containsKey(childOne.keySet().iterator().next()));
 
             Map<List<NIRData>, Integer> childTwo;
-            // выполняем получения потомка до тех пор, пока не получим уникальную для репродукционного множетсва особь,
+            // выполняем получения потомка до тех пор, пока не получим уникальную для репродукционного множества особь,
             // отличную от первого потомка(childOne)
             do {
                 childTwo = createChild(parentTwo, parentOne);
@@ -265,6 +265,7 @@ public class EGA {
     }
 
     public void egaSolver(List<Map<List<NIRData>, Integer>> startPopulations) {
+
         for (Map<List<NIRData>, Integer> startPopulation : startPopulations) {
             int generationCounter = 0;
             int withOutChangeCounter = 0;
@@ -296,7 +297,7 @@ public class EGA {
                 globalMaxF = bestIndividual.getValue();
                 tmp_result = bestIndividual;
             }
-            //System.out.println(bestIndividual.getValue());
+            System.out.println(bestIndividual.getValue());
         }
 
     }
@@ -315,4 +316,3 @@ public class EGA {
         System.out.println("Время выполнения: " + duration + " мс " + duration / 1000 + " сек");
     }
 }
-
