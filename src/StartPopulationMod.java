@@ -7,6 +7,7 @@ public class StartPopulationMod extends StartPopulation {
     @Override
     public List<Map<List<NIRData>, Integer>> StartPopulationForming(ArrayList<ArrayList<NIRData>> tasks) {
         List<Map<List<NIRData>, Integer>> individualWithFitness = new ArrayList<>();
+
         for (ArrayList<NIRData> inner : tasks) {
             List<List<NIRData>> startPopulation = getStartPopulation(inner, populationSize);
             Map<List<NIRData>, Integer> Individual = new HashMap<>();
