@@ -22,14 +22,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  * */
 
 public class BF {
+
+    int availableProcessors = (Runtime.getRuntime().availableProcessors())/2;
+
     int listOfTaskSize;
     private static int globalMaxF = 0;
     long programStartTime = System.currentTimeMillis();
 
     List<NIRData> tmpResult;
     private static List<NIRData> tmpGlobalResult;
-    int numOfExecutors = 6;
-    int numOfConsumers = 2;
+
+    int numOfExecutors = (int)(availableProcessors*0.84f);
+    int numOfConsumers = availableProcessors-numOfExecutors;
+
     private static final AtomicInteger completedTasks = new AtomicInteger(0);
     List<List<NIRData>> POISON_PILL = new ArrayList<>();
 
