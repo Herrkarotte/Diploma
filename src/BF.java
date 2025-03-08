@@ -36,13 +36,35 @@ public class BF {
     List<NIRData> tmpGlobalResult;
 
     BlockingDeque<List<List<NIRData>>> queue = new LinkedBlockingDeque<>(100);
-    CountDownLatch latch = new CountDownLatch(2);
+    CountDownLatch latch = new CountDownLatch(4);
 
 
     public void bfSolver(ArrayList<ArrayList<NIRData>> tasks) {
+
+//        int mid = (tasks.size() + 1) / 2; // Учитываем нечетное количество задач
+//        ArrayList<ArrayList<NIRData>> part1 = new ArrayList<>(tasks.subList(0, mid));
+//        ArrayList<ArrayList<NIRData>> part2 = new ArrayList<>(tasks.subList(mid, tasks.size()));
+        ArrayList<ArrayList<NIRData>> part1 = new ArrayList<>();
+        ArrayList<ArrayList<NIRData>> part2 = new ArrayList<>();
+        ArrayList<ArrayList<NIRData>> part3 = new ArrayList<>();
+
+        int size = tasks.size();
+        int partSize = (size + 2) / 3;
+
+        for (int i = 0; i < partSize && i < size; i++) {
+            part1.add(tasks.get(i));
+        }
+
+        for (int i = partSize; i < 2 * partSize && i < size; i++) {
+            part2.add(tasks.get(i));
+        }
+        for (int i = 2 * partSize; i < size; i++) {
+            part3.add(tasks.get(i));
+        }
+
         listOfTaskSize = tasks.size();
         Thread producer = new Thread(() -> {
-            for (ArrayList<NIRData> inner : tasks) {
+            for (ArrayList<NIRData> inner : part1) {
                 try {
                     PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
                     List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
@@ -54,9 +76,40 @@ public class BF {
             }
             latch.countDown();
         });
-
-        Thread counsumer = new Thread(() -> {
-            for (ArrayList<NIRData> inner : tasks) {
+        Thread producer2 = null;
+        if (!part2.isEmpty()) {
+            producer2 = new Thread(() -> {
+                for (ArrayList<NIRData> inner : part2) {
+                    try {
+                        PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
+                        List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
+                        queue.put(permutations);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+                latch.countDown();
+            });
+        }
+        Thread producer3 = null;
+        if (!part3.isEmpty()) {
+            producer3 = new Thread(() -> {
+                for (ArrayList<NIRData> inner : part3) {
+                    try {
+                        PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
+                        List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
+                        queue.put(permutations);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+                latch.countDown();
+            });
+        }
+        Thread consumer = new Thread(() -> {
+            for (ArrayList<NIRData> inner : tasks)
                 try {
                     List<List<NIRData>> permutations = queue.take();
 
@@ -92,11 +145,14 @@ public class BF {
                     Thread.currentThread().interrupt();
                     break;
                 }
-            }
+
             latch.countDown();
         });
         producer.start();
-        counsumer.start();
+        if (producer2 != null) producer2.start();
+        if (producer3 != null) producer3.start();
+
+        consumer.start();
 
         try {
             latch.await();
@@ -104,6 +160,7 @@ public class BF {
             e.printStackTrace();
         }
     }
+
 
     public void printResult() {
         System.out.print("Лучшая перестановка, полученная путем полного перебора за " + listOfTaskSize + " задач:[ ");
