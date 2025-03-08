@@ -5,6 +5,7 @@ import org.apache.commons.collections4.iterators.PermutationIterator;
 import java.util.concurrent.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /*
@@ -22,145 +23,112 @@ import java.util.List;
 
 public class BF {
     int listOfTaskSize;
-
-    int startTime;
-    int leadTime;
-
-    int totalTime;
-    int F;
-    int maxF = 0;
-    int globalMaxF = 0;
+    private static int globalMaxF = 0;
     long programStartTime = System.currentTimeMillis();
 
     List<NIRData> tmpResult;
-    List<NIRData> tmpGlobalResult;
-
-    BlockingDeque<List<List<NIRData>>> queue = new LinkedBlockingDeque<>(100);
-    CountDownLatch latch = new CountDownLatch(4);
-
+    private static List<NIRData> tmpGlobalResult;
+    int numOfExecutors = 6;
+    int numOfConsumers = 2;
+    private static final AtomicInteger completedTasks = new AtomicInteger(0);
+    List<List<NIRData>> POISON_PILL = new ArrayList<>();
 
     public void bfSolver(ArrayList<ArrayList<NIRData>> tasks) {
-
-//        int mid = (tasks.size() + 1) / 2; // Учитываем нечетное количество задач
-//        ArrayList<ArrayList<NIRData>> part1 = new ArrayList<>(tasks.subList(0, mid));
-//        ArrayList<ArrayList<NIRData>> part2 = new ArrayList<>(tasks.subList(mid, tasks.size()));
-        ArrayList<ArrayList<NIRData>> part1 = new ArrayList<>();
-        ArrayList<ArrayList<NIRData>> part2 = new ArrayList<>();
-        ArrayList<ArrayList<NIRData>> part3 = new ArrayList<>();
-
-        int size = tasks.size();
-        int partSize = (size + 2) / 3;
-
-        for (int i = 0; i < partSize && i < size; i++) {
-            part1.add(tasks.get(i));
-        }
-
-        for (int i = partSize; i < 2 * partSize && i < size; i++) {
-            part2.add(tasks.get(i));
-        }
-        for (int i = 2 * partSize; i < size; i++) {
-            part3.add(tasks.get(i));
-        }
-
         listOfTaskSize = tasks.size();
-        Thread producer = new Thread(() -> {
-            for (ArrayList<NIRData> inner : part1) {
-                try {
-                    PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
-                    List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
-                    queue.put(permutations);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-            latch.countDown();
-        });
-        Thread producer2 = null;
-        if (!part2.isEmpty()) {
-            producer2 = new Thread(() -> {
-                for (ArrayList<NIRData> inner : part2) {
+        BlockingDeque<List<List<NIRData>>> queue = new LinkedBlockingDeque<>(100);
+        ExecutorService generators = Executors.newFixedThreadPool(numOfExecutors);
+        ExecutorService consumers = Executors.newFixedThreadPool(numOfConsumers);
+
+        CountDownLatch latch = new CountDownLatch(numOfConsumers);
+
+        for (ArrayList<NIRData> task : tasks) {
+            generators.submit(() -> {
+                generatePermutation(task, queue);
+                if (completedTasks.incrementAndGet() == tasks.size()) {
                     try {
-                        PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
-                        List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
-                        queue.put(permutations);
+                        for (int j = 0; j < numOfConsumers; j++) {
+                            queue.put(POISON_PILL);
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            });
+        }
+        for (int i = 0; i < numOfConsumers; i++) {
+            consumers.submit(() -> {
+                while (true) {
+                    try {
+                        List<List<NIRData>> permutations = queue.take();
+                        if (permutations == POISON_PILL) {
+                            latch.countDown();
+                            break;
+                        }
+                        solveTask(permutations);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
                     }
                 }
-                latch.countDown();
             });
         }
-        Thread producer3 = null;
-        if (!part3.isEmpty()) {
-            producer3 = new Thread(() -> {
-                for (ArrayList<NIRData> inner : part3) {
-                    try {
-                        PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(inner);
-                        List<List<NIRData>> permutations = IteratorUtils.toList(permutationIterator);
-                        queue.put(permutations);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-                latch.countDown();
-            });
-        }
-        Thread consumer = new Thread(() -> {
-            for (ArrayList<NIRData> inner : tasks)
-                try {
-                    List<List<NIRData>> permutations = queue.take();
-
-                    maxF = 0;
-                    for (List<NIRData> permutation : permutations) {
-                        F = 0;
-                        totalTime = 0;
-                        for (NIRData detail : permutation) {
-                            leadTime = detail.getLeadTime();
-                            if (totalTime == 0) {
-                                startTime = detail.getStartTime();
-                            } else {
-                                startTime = Math.max(detail.getStartTime(), totalTime);
-                            }
-                            int endTime = startTime + leadTime;
-                            if (endTime <= detail.getDirectiveDeadline()) {
-                                F++;
-                            }
-                            totalTime = endTime;
-                        }
-                        if (F >= maxF) {
-                            maxF = F;
-                            tmpResult = permutation;
-                        }
-                    }
-                    //System.out.println(maxF);
-                    if (maxF >= globalMaxF) {
-                        globalMaxF = maxF;
-                        tmpGlobalResult = tmpResult;
-                    }
-
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-
-            latch.countDown();
-        });
-        producer.start();
-        if (producer2 != null) producer2.start();
-        if (producer3 != null) producer3.start();
-
-        consumer.start();
-
+        generators.shutdown();
+        consumers.shutdown();
         try {
             latch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.out.println("Завершение было прервано");
         }
     }
 
+    private void generatePermutation(ArrayList<NIRData> task, BlockingDeque<List<List<NIRData>>> queue) {
+        try {
+            PermutationIterator<NIRData> permutationIterator = new PermutationIterator<>(task);
+            List<List<NIRData>> permutation = IteratorUtils.toList(permutationIterator);
+            queue.put(permutation);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void solveTask(List<List<NIRData>> permutations) {
+        int startTime;
+        int leadTime;
+
+        int totalTime;
+        int F;
+        int maxF;
+        maxF = 0;
+        F = 0;
+        for (List<NIRData> permutation : permutations) {
+            F = 0;
+            totalTime = 0;
+            for (NIRData detail : permutation) {
+                leadTime = detail.getLeadTime();
+                if (totalTime == 0) {
+                    startTime = detail.getStartTime();
+                } else {
+                    startTime = Math.max(detail.getStartTime(), totalTime);
+                }
+                int endTime = startTime + leadTime;
+                if (endTime <= detail.getDirectiveDeadline()) {
+                    F++;
+                }
+                totalTime = endTime;
+            }
+            if (F >= maxF) {
+                maxF = F;
+                tmpResult = permutation;
+            }
+        }
+        //System.out.println(maxF);
+        synchronized (BF.class) {
+            if (maxF >= globalMaxF) {
+                globalMaxF = maxF;
+                tmpGlobalResult = tmpResult;
+            }
+        }
+    }
 
     public void printResult() {
         System.out.print("Лучшая перестановка, полученная путем полного перебора за " + listOfTaskSize + " задач:[ ");
