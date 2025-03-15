@@ -56,7 +56,7 @@ import java.util.List;
  * а так же время, потраченное на решение этих задач.
  * */
 public class EGA {
-
+    int listOfTaskSize;
     // количество родительских пар и пар потомков
     int parentsAndChild = 5;
     //количество особей для удаления и для получения из бета-турнира
@@ -100,9 +100,9 @@ public class EGA {
         Map<List<NIRData>, Integer> parentOne;
         Map<List<NIRData>, Integer> parentTwo;
 
-        for (int i = 0; i < parentsAndChild; i++) {
+        for (int i = 0; i < parentsAndChild*2; i+=2) {
             parentOne = parents.get(i);
-            parentTwo = parents.get(i + (parents.size() / 2));
+            parentTwo = parents.get(i+1);
 
             Map<List<NIRData>, Integer> childOne;
             // выполняем получение потомка до тех пор, пока не получим уникальную для репродукционного множества особь
@@ -201,7 +201,7 @@ public class EGA {
         Map<List<NIRData>, Integer> mutants = new HashMap<>();
         for (Map.Entry<List<NIRData>, Integer> entry : population.entrySet()) {
             probability = secureRandom.nextFloat();
-            if (probability <= 0.1f) {
+            if (probability <= 0.25f) {
                 List<NIRData> list = entry.getKey();
                 List<NIRData> newList = new ArrayList<>(list);
 
@@ -266,6 +266,7 @@ public class EGA {
     }
 
     public void egaSolver(List<Map<List<NIRData>, Integer>> startPopulations) {
+        listOfTaskSize=startPopulations.size();
 
         for (Map<List<NIRData>, Integer> startPopulation : startPopulations) {
             int generationCounter = 0;
@@ -304,7 +305,7 @@ public class EGA {
     }
 
     public void egaPrintResult() {
-        System.out.print("Лучшая перестановка, полученная при помощи ЭГА за 100 задач:[ ");
+        System.out.print("Лучшая перестановка, полученная при помощи ЭГА за "+listOfTaskSize+" задач:[ ");
         List<NIRData> details = tmp_result.getKey();
         for (NIRData detail : details) {
             System.out.print(detail.getNumberOfDetails() + " ");
